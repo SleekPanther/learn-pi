@@ -8,14 +8,74 @@ import {
 	Image, 
 	Dimensions, 
 	TextInput, 
+	TouchableHighlight, 
 } from 'react-native';
 
+import TimeFormatter from 'minutes-seconds-milliseconds' 
+
 import picIcon from './assets/icon.png';
+
 
 export default class App extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { pi: '3.14', output: 'output' };
+		this.PI_DEFAULT = '3.14';
+		this.state = {
+			pi: this.PI_DEFAULT,
+			output: 'output',
+			timerRunning: false, 
+			time: null,
+
+			
+		}; 
+
+		this.toggleTimer = this.toggleTimer.bind(this);
+	}
+
+	toggleTimer(){
+		let {timerRunning} = this.state
+		this.setState({timerRunning: !timerRunning})
+
+		// if(!timerRunning){
+			
+		// }
+
+		// if(!this.state.timerRunning){
+		//  this.startTimer()
+		//  this.setState({running: 'true'})
+		// }
+		// else{
+		//  this.setState({running: 'false'})
+		// }
+		
+	}
+
+	formatTime(time){
+		return time + ".0"
+	}
+
+	startTimer(){
+		this.setState({timerRunning: true})
+	}
+
+	pause(){
+
+	}
+
+	resume(){
+
+	}
+
+	reset(){
+		this.setState({output: 'reset'})
+	}
+
+	clear(){
+		this.setState({pi: this.PI_DEFAULT})
+	}
+
+	restart(){
+		this.setState({output: 'restart'})
 	}
 
 	render() {
@@ -23,16 +83,22 @@ export default class App extends React.Component {
 			<View style={[styles.container]}>
 				<View style={styles.statusBar} />
 			
-				<View style={[styles.clockContainer]}>
-					<Text style={[styles.clock, styles.defaultText, styles.highlight, styles.border]}>0:31</Text>
+				<View style={[styles.timerContainer]}>
+					<Text style={[styles.timer, styles.defaultText, styles.highlight, styles.border]}>{TimeFormatter(this.state.time)}</Text>
 				</View>
 				<View style={[styles.controlsContainer]}>
 					<Text style={[styles.border ]}>Play</Text>
 					<Text style={[styles.border ]}>Pause</Text>
 					<View style={[styles.resetContainer]}>
-						<Text style={[styles.border ]}>Reset Clock</Text>
-						<Text style={[styles.border ]}>Clear</Text>
-						<Text style={[styles.border ]}>Restart</Text>
+						<TouchableHighlight underlayColor='yellow' style={[styles.button ]} onPress={() => this.reset()}>
+							<Text style={[styles.buttonText]}>Reset Timer</Text>
+						</TouchableHighlight>
+						<TouchableHighlight underlayColor='yellow' style={[styles.button ]} onPress={() => this.clear()}>
+							<Text style={[styles.buttonText]}>Clear</Text>
+						</TouchableHighlight>
+						<TouchableHighlight underlayColor='yellow' style={[styles.button ]} onPress={() => this.restart()}>
+							<Text style={[styles.buttonText]}>Restart</Text>
+						</TouchableHighlight>
 					</View>
 				</View>
 
@@ -42,11 +108,18 @@ export default class App extends React.Component {
 					keyboardType = 'numeric'
 					autoFocus={true}
 					// onChangeText = {(text)=> this.onChanged(text)}
-					onChangeText = {(text)=> this.setState({pi: text})}
+					onChangeText = {(text)=> {
+						this.setState({
+							pi: text, 
+							// output: text, 
+						})
+						this.toggleTimer()
+					}}
 					value={this.state.pi}
 				/>
 
-				<Text>{this.state.pi}</Text>
+				<Text>{this.state.output}</Text>
+				<Text>Running? {this.state.timerRunning ? 'true' : 'false'}</Text>
 
 
 				<Image source={picIcon} style={[styles.roundPic]}/>
@@ -60,17 +133,17 @@ const styles = StyleSheet.create({
 		borderWidth: StyleSheet.hairlineWidth, 
 	}, 
 
-	statusBar:{
-		height: StatusBar.currentHeight,
-		backgroundColor: "black",
-	}, 
+	// statusBar:{
+	//   height: StatusBar.currentHeight,
+	//   backgroundColor: "black",
+	// }, 
 
 	container: {
 		flex: 1,
 		flexDirection: 'column', 
 		backgroundColor: 'orange',
 	},
-	clockContainer:{
+	timerContainer:{
 		flexDirection: 'row', 
 		justifyContent: 'center', 
 	}, 
@@ -82,7 +155,7 @@ const styles = StyleSheet.create({
 		// flexDirection: 'column'
 	}, 
 
-	clock: {
+	timer: {
 		fontSize: 24, 
 		fontWeight: 'bold', 
 	}, 
@@ -92,9 +165,22 @@ const styles = StyleSheet.create({
 		backgroundColor: 'white', 
 	}, 
 
+	button:{
+		margin: 1, 
+		padding: 3, 
+		alignItems: 'center', 
+		borderWidth: 2, 
+		borderRadius: 5, 
+		backgroundColor: 'lightgray', 
+	}, 
+	buttonText:{
+		fontSize: 15, 
+		fontWeight: 'bold', 
+	},
+
 
 	roundPic:{
-		borderRadius: 100, 
+		borderRadius: 100,
 		flex: 1, 
 		width: Dimensions.get('window').width, 
 	}, 

@@ -16,11 +16,13 @@
 		},
 		"ios": {
 			"supportsTablet": true
-		},
-
-		//Doesn't seem to have any effect
-		"androidStatusBar": {
-			"backgroundColor": "black", 
 		}
 
+		,
+		//Doesn't seem to have any effect
+		"androidStatusBar": {
+			"backgroundColor": "#000000", 
+		}
+		
+	}
 }
