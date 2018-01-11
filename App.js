@@ -20,22 +20,53 @@ export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.PI_DEFAULT = '3.14';
+		this.PI_ACTUAL = '3.1415'
+		// this.PI_ACTUAL = '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248'
+		this.MAX_LENGTH = this.PI_ACTUAL.length+1	//+1 to allow to temporarily type character and then see it backspaced
 		this.state = {
 			pi: this.PI_DEFAULT,
-			output: 'output',
+			correct: true, 
 			timerRunning: false, 
 			time: null,
 			timeStart: null, 
 			
-			// counter: 0, 
+			output: 'output',
+			output2: 'output2',
+			answer: 'correct', 
 		}; 
 	}
 
-	startTimerIfStopped(){
-		//check if NOT backspace key
+	handleKeyPress(text){
+		if(text.length >= this.MAX_LENGTH){			//>= to prevent pasting
+			this.setState({output: 'Too many digits, load more'})
+			return
+		}
+
+		//Setting state after allows a character to temporarily appear, but then be backspaced and returning before any comparison is made
+		this.setState({
+			pi: text, 
+		})
 
 		if(!this.state.timerRunning){
 			this.startTimer()
+		}
+
+		//Check if pi is correct
+		let number = text.replace(/\s/g, '');
+		let numDigits = number.length
+		this.setState({
+			output: number, 
+			output2: this.PI_ACTUAL.substring(0, numDigits), 
+		})
+		if(number === this.PI_ACTUAL.substring(0, numDigits)){
+			this.setState({
+				correct: true, 
+			})
+		}
+		else{
+			this.setState({
+				correct: false, 
+			})
 		}
 	}
 
@@ -48,7 +79,7 @@ export default class App extends React.Component {
 			})
 			this.intervalId = setInterval(() =>{
 				this.setState({time: new Date() - this.state.timeStart + time, })
-			}, 100)
+			}, 120)
 		}
 	}
 
@@ -103,23 +134,20 @@ export default class App extends React.Component {
 				</View>
 
 				<TextInput
-					style={[styles.inputBox, styles.border]}
+					style={[styles.inputBox, styles.border, styles.incorrect, this.state.correct && styles.correct]}
+				//Multiline doesn't work for numeric somehow
 					multiline={true}
+					maxLength={this.MAX_LENGTH}
 					keyboardType = 'numeric'
 					autoFocus={true}
 					// onChangeText = {(text)=> this.onChanged(text)}
-					onChangeText = {(text)=> {
-						this.setState({
-							pi: text, 
-							// output: text, 
-						})
-						this.startTimerIfStopped()
-					}}
+					onChangeText = {(text)=> this.handleKeyPress(text)}
 					value={this.state.pi}
 				/>
 
 				<Text>{this.state.output}</Text>
-				<Text>Running? {this.state.timerRunning ? 'true' : 'false'}</Text>
+				<Text>{this.state.output2}</Text>
+				<Text>{this.state.answer}</Text>
 
 
 				<Image source={picIcon} style={[styles.roundPic]}/>
@@ -161,8 +189,13 @@ const styles = StyleSheet.create({
 	}, 
 
 	inputBox:{
-		height: 40,
-		backgroundColor: 'white', 
+		fontSize: 19, 
+	}, 
+	correct:{
+		backgroundColor: '#0f0', 
+	}, 
+	incorrect:{
+		backgroundColor: '#f00', 
 	}, 
 
 	button:{
