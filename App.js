@@ -20,11 +20,13 @@ export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.PI_DEFAULT = '3.14';
-		this.PI_ACTUAL = '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248'
-		this.PI_ACTUAL_ARRAY = this.PI_ACTUAL.split('')
-		this.MAX_LENGTH = this.PI_ACTUAL.length+1	//+1 to allow to temporarily type character and then see it backspaced
+		this.PI_REFERENCE = '3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248'
+		this.PI_REFERENCE_ARRAY = this.PI_REFERENCE.split('')
+		this.MAX_LENGTH = this.PI_REFERENCE.length+1	//+1 to allow to temporarily type character and then see it backspaced
+		this.correctDigit = new Array(this.PI_DEFAULT.length).fill(true)
 		this.state = {
 			pi: this.PI_DEFAULT,
+			piOutputArray: this.PI_DEFAULT.split(''),
 			correct: true, 
 			timerRunning: false, 
 			time: null,
@@ -36,16 +38,11 @@ export default class App extends React.Component {
 		}; 
 	}
 
-	handleKeyPress(text){
+	handleChangeText(text){
 		if(text.length >= this.MAX_LENGTH){			//>= to prevent pasting
 			this.setState({output: 'Too many digits, load more'})
 			return
 		}
-
-		//Setting state after allows a character to temporarily appear, but then be backspaced and returning before any comparison is made
-		this.setState({
-			pi: text, 
-		})
 
 		if(!this.state.timerRunning){
 			this.startTimer()
@@ -54,16 +51,15 @@ export default class App extends React.Component {
 		//Check if pi is correct
 		let number = text.replace(/\s/g, '');
 		let numDigits = number.length
-		this.setState({
-			output: number, 
-			output2: this.PI_ACTUAL.substring(0, numDigits), 
-		})
 
-		this.correctDigit = new Array(numDigits)
 		let numberArray = number.split('')
-		this.setState({correct: true})		//Assume it's true to start
+		this.setState({
+			correct: true, 		//Assume it's true to start
+			pi: text, 			//Setting state after allows a character to temporarily appear, but then be backspaced and returning before any comparison is made
+			piOutputArray: numberArray, 
+		})
 		for(i=0; i<numDigits; i++){
-			if(numberArray[i] === this.PI_ACTUAL_ARRAY[i]){
+			if(numberArray[i] === this.PI_REFERENCE_ARRAY[i]){
 				this.correctDigit[i] = true
 			}
 			else{
@@ -71,17 +67,6 @@ export default class App extends React.Component {
 				this.setState({correct: false})
 			}
 		}
-
-		// if(number === this.PI_ACTUAL.substring(0, numDigits)){
-		// 	this.setState({
-		// 		correct: true, 
-		// 	})
-		// }
-		// else{
-		// 	this.setState({
-		// 		correct: false, 
-		// 	})
-		// }
 
 		//make sure to trim spaces so stuff highlighted works? or unneeded if copied to new place
 	}
@@ -95,7 +80,7 @@ export default class App extends React.Component {
 			})
 			this.intervalId = setInterval(() =>{
 				this.setState({time: new Date() - this.state.timeStart + time, })
-			}, 120)
+			}, 1000)
 		}
 	}
 
@@ -156,15 +141,23 @@ export default class App extends React.Component {
 					maxLength={this.MAX_LENGTH}
 					keyboardType = 'numeric'
 					autoFocus={true}
-					// onChangeText = {(text)=> this.onChanged(text)}
-					onChangeText = {(text)=> this.handleKeyPress(text)}
+					onChangeText = {(text)=> this.handleChangeText(text)}
+				//Update value to new state variable
 					value={this.state.pi}
 				/>
+
+				<Text style={[styles.piOutputContainerText]}>
+					{this.state.piOutputArray.map((digit, index)=>{
+						if(this.correctDigit[index]){
+							return <Text key={index} style={[styles.correct]}>{digit}</Text>
+						}
+						return <Text key={index} style={[styles.incorrect]}>{digit}</Text>
+					})}
+				</Text>
 
 				<Text>{this.state.output}</Text>
 				<Text>{this.state.output2}</Text>
 				<Text>{this.state.answer}</Text>
-
 
 				<Image source={picIcon} style={[styles.roundPic]}/>
 			</View>
@@ -206,6 +199,10 @@ const styles = StyleSheet.create({
 
 	inputBox:{
 		fontSize: 19, 
+	}, 
+	piOutputContainerText:{
+		backgroundColor: 'lightblue', 
+		minHeight: 19, 
 	}, 
 	correct:{
 		backgroundColor: '#0f0', 
