@@ -25,49 +25,44 @@ export default class App extends React.Component {
 			output: 'output',
 			timerRunning: false, 
 			time: null,
-
+			timeStart: null, 
 			
+			// counter: 0, 
 		}; 
-
-		this.toggleTimer = this.toggleTimer.bind(this);
 	}
 
-	toggleTimer(){
-		let {timerRunning} = this.state
-		this.setState({timerRunning: !timerRunning})
+	startTimerIfStopped(){
+		//check if NOT backspace key
 
-		// if(!timerRunning){
-			
-		// }
-
-		// if(!this.state.timerRunning){
-		//  this.startTimer()
-		//  this.setState({running: 'true'})
-		// }
-		// else{
-		//  this.setState({running: 'false'})
-		// }
-		
-	}
-
-	formatTime(time){
-		return time + ".0"
+		if(!this.state.timerRunning){
+			this.startTimer()
+		}
 	}
 
 	startTimer(){
-		this.setState({timerRunning: true})
+		let {time} = this.state
+		if(!this.state.timerRunning){
+			this.setState({
+				timeStart: new Date(),
+				timerRunning: true, 
+			})
+			this.intervalId = setInterval(() =>{
+				this.setState({time: new Date() - this.state.timeStart + time, })
+			}, 100)
+		}
 	}
 
 	pause(){
-
-	}
-
-	resume(){
-
+		clearInterval(this.intervalId)
+		this.setState({timerRunning: false, })
 	}
 
 	reset(){
-		this.setState({output: 'reset'})
+		this.pause()
+		this.setState({
+			timerRunning: false, 
+			time: null, 
+		})
 	}
 
 	clear(){
@@ -75,7 +70,12 @@ export default class App extends React.Component {
 	}
 
 	restart(){
-		this.setState({output: 'restart'})
+		this.pause()
+		this.setState({
+			pi: this.PI_DEFAULT, 
+			timerRunning: false, 
+			time: null, 
+		})
 	}
 
 	render() {
@@ -87,8 +87,8 @@ export default class App extends React.Component {
 					<Text style={[styles.timer, styles.defaultText, styles.highlight, styles.border]}>{TimeFormatter(this.state.time)}</Text>
 				</View>
 				<View style={[styles.controlsContainer]}>
-					<Text style={[styles.border ]}>Play</Text>
-					<Text style={[styles.border ]}>Pause</Text>
+					<Text style={[styles.border ]} onPress={() => this.startTimer()}>Resume</Text>
+					<Text style={[styles.border ]} onPress={() => this.pause()}>Pause</Text>
 					<View style={[styles.resetContainer]}>
 						<TouchableHighlight underlayColor='yellow' style={[styles.button ]} onPress={() => this.reset()}>
 							<Text style={[styles.buttonText]}>Reset Timer</Text>
@@ -113,7 +113,7 @@ export default class App extends React.Component {
 							pi: text, 
 							// output: text, 
 						})
-						this.toggleTimer()
+						this.startTimerIfStopped()
 					}}
 					value={this.state.pi}
 				/>
@@ -196,4 +196,4 @@ const styles = StyleSheet.create({
 });
 
 
-// AppRegistry.registerComponent('learn-pi', () => Extra)
+AppRegistry.registerComponent('learn-pi', () => App)
